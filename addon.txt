@@ -1,0 +1,10 @@
+"AddonInfo"
+{
+	"name"			"votekick"
+	"version"		"WIP"
+	"up_date"		"09 October 2015"
+	"author_name"	"f122apg"
+	"author_email"	""
+	"author_url"	""
+	"info"			""
+}

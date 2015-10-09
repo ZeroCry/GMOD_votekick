@@ -51,13 +51,13 @@ end
 
 function votekick(kickplayer, voteby)
 	-- Variables
-	kickplayer = tostring(kickplayer)
+	kickplayer_str = tostring(kickplayer)
 	local textsizeMAX = 311
 	local textsizeMIN = 311--206
 	-- text width size check. 1 character = 13
 	surface.SetFont("KickPlayerFont")
-	local dllvkttextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGTITLE"])
-	dllvkmtextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer .. " ?")
+	dllvkttextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGTITLE"])
+	dllvkmtextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer_str .. " ?")
 
 	-- if text size is over
 	if dllvkmtextwidth > textsizeMAX then
@@ -70,9 +70,9 @@ function votekick(kickplayer, voteby)
 			minuscounter = minuscounter + 1
 		until width <= textsizeMAX
 
-		local subtext = string.sub(kickplayer, string.len(kickplayer) - minuscounter, string.len(kickplayer))
-		kickplayer = string.gsub(kickplayer, subtext, "") .. "..."
-		dllvkmtextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer .. " ?")
+		local subtext = string.sub(kickplayer_str, string.len(kickplayer_str) - minuscounter, string.len(kickplayer_str))
+		kickplayer_str = string.gsub(kickplayer_str, subtext, "") .. "..."
+		dllvkmtextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer_str .. " ?")
 
 	elseif dllvkmtextwidth < textsizeMIN then
 		dllvkmtextwidth = textsizeMIN
@@ -186,19 +186,17 @@ function DialogCreate(selector_or_voting)
 		DSetPosSizeParent(dllvkm, 5, 35, dllvkmtextwidth, 50, dpvk)
 		dllvkm:SetTextColor(COLOR["WHITE"])
 		dllvkm:SetFont("KickPlayerFont")
-		dllvkm:SetText(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer .. " ?")
+		dllvkm:SetText(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer_str .. " ?")
 		-- Label pressf1_yes
 		dllvky = vgui.Create("DLabel")
 		DSetPosSizeParent(dllvky, 5, 65, 300, 50, dpvk)
 		dllvky:SetTextColor(Color(0, 200, 0, 255))
-		--dllvky:SetTextColor(COLOR["WHITE"])
 		dllvky:SetFont("KickPlayerFont")
 		dllvky:SetText("Press F1 to Vote YES")
 		-- Label pressf2_no
 		dllvkn = vgui.Create("DLabel")
 		DSetPosSizeParent(dllvkn, 5, 92, 300, 50, dpvk)
 		dllvkn:SetTextColor(Color(200, 0, 0, 255))
-		--dllvkn:SetTextColor(COLOR["WHITE"])
 		dllvkn:SetFont("KickPlayerFont")
 		dllvkn:SetText("Press F2 to Vote NO")
 		-- Label Vote Yes Counting
