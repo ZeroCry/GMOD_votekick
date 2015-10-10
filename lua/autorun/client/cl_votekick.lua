@@ -1,4 +1,6 @@
-WORDS  = {SELECTOR_DIALOGTITLE = "Do you want kick player?", VOTEKICK_DIALOGTITLE = "VoteKick", VOTEKICK_DIALOGCONTENT = "KickPlayer: "}
+DERMATEXT  = {SELECTOR_DIALOGTITLE = "Do you want kick player?",
+			VK_DIALOGTITLE = "VoteKick", VK_DIALOGCONTENT = "KickPlayer: ",
+			VK_LABEL_PRESSKEY_YES = "Press F1 to Vote YES", VK_LABEL_PRESSKEY_NO = "Press F2 to Vote NO"}
 ERRORS = {NOTSELECT = "Please select you want kick player."}
 KEYS   = {VOTE_YES = KEY_F1 , VOTE_NO = KEY_F2}
 COLOR  = {WHITE = Color(255, 255, 255, 255)}
@@ -24,11 +26,12 @@ function init()
 	additive  = false,
 	outline   = false,
 	})
+
 	User_Vote = nil
 	VoteLock = false
 	VoteReady = false
 
-	print("cl_votekick - Initialize compleate")
+	print("cl_votekick - Initialize complete")
 end
 init()
 
@@ -52,12 +55,14 @@ end
 function votekick(kickplayer, voteby)
 	-- Variables
 	kickplayer_str = tostring(kickplayer)
+	vk_dialogcontent = DERMATEXT["VK_DIALOGCONTENT"] .. kickplayer_str .. " ?"
+	votetime = 60
 	local textsizeMAX = 311
-	local textsizeMIN = 311--206
+	local textsizeMIN = 311
 	-- text width size check. 1 character = 13
 	surface.SetFont("KickPlayerFont")
-	dllvkttextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGTITLE"])
-	dllvkmtextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer_str .. " ?")
+	dllvkttextwidth = surface.GetTextSize(DERMATEXT["VK_DIALOGTITLE"])
+	dllvkmtextwidth = surface.GetTextSize(vk_dialogcontent)
 
 	-- if text size is over
 	if dllvkmtextwidth > textsizeMAX then
@@ -72,12 +77,14 @@ function votekick(kickplayer, voteby)
 
 		local subtext = string.sub(kickplayer_str, string.len(kickplayer_str) - minuscounter, string.len(kickplayer_str))
 		kickplayer_str = string.gsub(kickplayer_str, subtext, "") .. "..."
-		dllvkmtextwidth = surface.GetTextSize(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer_str .. " ?")
+		dllvkmtextwidth = surface.GetTextSize(DERMATEXT["VK_DIALOGCONTENT"] .. kickplayer_str .. " ?")
+		vk_dialogcontent = DERMATEXT["VK_DIALOGCONTENT"] .. kickplayer_str .. " ?"
 
 	elseif dllvkmtextwidth < textsizeMIN then
 		dllvkmtextwidth = textsizeMIN
 	end
 
+	timer.Create("vk_timer", 1, 0, vote_countdown)
 	DialogCreate("voting")
 
 	surface.PlaySound( "garrysmod/ui_click.wav" )
@@ -112,20 +119,33 @@ function voting()
 	end
 end
 
--- vote is available for time
-function votekicktimer(delay_in_second)
-	timer.Simple(delay_in_second, function()
+function vote_countdown()
+	if votetime <= 0 then
 		VoteReady = false
-	end)
+	else
+		votetime = votetime - 1
+		local str = tostring(votetime)
+		if string.len(str) == 1 then
+			str = "0" .. str
+		end
+		dlltimer:SetText("00:" .. str)
+	end
 end
 
 -- votekick display update
-function votekick_update()
+function vkdisplay_update()
 	dllvkYcount_Text = tostring(net.ReadInt(4))
 	dllvkNcount_Text = tostring(net.ReadInt(4))
 	dllvkYcount:SetText(dllvkYcount_Text)
 	dllvkNcount:SetText(dllvkNcount_Text)
 end
+
+
+
+
+
+
+
 
 -- Util
 -- DermaCreate
@@ -135,7 +155,7 @@ function DialogCreate(selector_or_voting)
 		df = vgui.Create("DFrame")
 		DSetPosSizeParent(df, ScrW() / 2, ScrH() / 2, 350, 250)
 		df:Center()
-		df:SetTitle(WORDS["SELECTOR_DIALOGTITLE"])
+		df:SetTitle(DERMATEXT["SELECTOR_DIALOGTITLE"])
 		df:SetDraggable(true)
 		df:MakePopup()
 		-- Panel
@@ -180,25 +200,25 @@ function DialogCreate(selector_or_voting)
 		DSetPosSizeParent(dllvkt, (dllvkmtextwidth / 2) - (dllvkttextwidth / 2), -3, 120, 50, dpvk)
 		dllvkt:SetTextColor(COLOR["WHITE"])
 		dllvkt:SetFont("DermaLarge")
-		dllvkt:SetText(WORDS["VOTEKICK_DIALOGTITLE"])
+		dllvkt:SetText(DERMATEXT["VK_DIALOGTITLE"])
 		-- Label Content
 		dllvkm = vgui.Create("DLabel")
 		DSetPosSizeParent(dllvkm, 5, 35, dllvkmtextwidth, 50, dpvk)
 		dllvkm:SetTextColor(COLOR["WHITE"])
 		dllvkm:SetFont("KickPlayerFont")
-		dllvkm:SetText(WORDS["VOTEKICK_DIALOGCONTENT"] .. kickplayer_str .. " ?")
+		dllvkm:SetText(vk_dialogcontent)
 		-- Label pressf1_yes
 		dllvky = vgui.Create("DLabel")
 		DSetPosSizeParent(dllvky, 5, 65, 300, 50, dpvk)
 		dllvky:SetTextColor(Color(0, 200, 0, 255))
 		dllvky:SetFont("KickPlayerFont")
-		dllvky:SetText("Press F1 to Vote YES")
+		dllvky:SetText(DERMATEXT["VK_LABEL_PRESSKEY_YES"])
 		-- Label pressf2_no
 		dllvkn = vgui.Create("DLabel")
 		DSetPosSizeParent(dllvkn, 5, 92, 300, 50, dpvk)
 		dllvkn:SetTextColor(Color(200, 0, 0, 255))
 		dllvkn:SetFont("KickPlayerFont")
-		dllvkn:SetText("Press F2 to Vote NO")
+		dllvkn:SetText(DERMATEXT["VK_LABEL_PRESSKEY_NO"])
 		-- Label Vote Yes Counting
 		dllvkYcount_Text = "0"
 		dllvkYcount = vgui.Create("DLabel")
@@ -236,7 +256,7 @@ end
 
 
 net.Receive("name_sendtoclient", kickplayer_selector)
-net.Receive("VoteCountedReturn", votekick_update)
+net.Receive("VoteCountedReturn", vkdisplay_update)
 hook.Add("Think", "Accept Keys", voting)
 -- Debug
 hook.Add("OnPlayerChat", "Debugging", votekick)
