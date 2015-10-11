@@ -52,7 +52,7 @@ function votekick_IsStart()
 	end
 end
 
-function votekick(kickplayer, voteby)
+function votekick(kickplayer)
 	-- Variables
 	kickplayer_str = tostring(kickplayer)
 	vk_dialogcontent = DERMATEXT["VK_DIALOGCONTENT"] .. kickplayer_str .. " ?"
@@ -84,8 +84,8 @@ function votekick(kickplayer, voteby)
 		dllvkmtextwidth = textsizeMIN
 	end
 
-	timer.Create("vk_timer", 1, 0, vote_countdown)
 	DialogCreate("voting")
+	timer.Create("vk_timer", 1, 0, vote_countdown)
 
 	surface.PlaySound( "garrysmod/ui_click.wav" )
 	VoteReady = true
@@ -186,7 +186,7 @@ function DialogCreate(selector_or_voting)
 		-- Frame
 		dfvk = vgui.Create("DFrame")
 		DSetPosSizeParent(dfvk, ScrW() - ScrW(), (ScrH() - ScrH()) + 300, dllvkmtextwidth + 20, 200)
-		dfvk:SetTitle("Vote by: " .. voteby)
+		dfvk:SetTitle("Vote by: " .. tostring(voteby))
 		--dfvk:ShowCloseButton(false)
 		-- Panel
 		dpvk = vgui.Create("DPanel")
