@@ -1,0 +1,11 @@
+{
+	"title"		:	"Votekick",
+	"type"		:	"ServerContent",
+	"tags"		:	[ "Admin", "Misc" ],
+	"ignore"	:
+	[
+		"*.psd",
+		"*.vcproj",
+		"*.svn*"
+	]
+}
