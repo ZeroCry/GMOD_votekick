@@ -45,7 +45,7 @@ function vote_result()
 		for i, n in pairs(players) do
 			local name = string.sub(tostring(players[i]), 12, string.find(tostring(players[i]), "]", 11, true) - 1)
 			if name == kickplayername then
-				--n:Kick()
+				n:Kick()
 			end
 		end
 	else
