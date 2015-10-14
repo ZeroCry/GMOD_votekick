@@ -34,6 +34,10 @@ end
 
 function vote_result()
 	if VoteCounter_NO < VoteCounter_YES then
+		util.AddNetworkString("votefinished_yes_imgshow")
+		net.Start("votefinished_yes_imgshow")
+		net.Broadcast()
+
 		PrintMessage(HUD_PRINTCENTER, "Vote passed! Player kicking...")
 		timer.Simple(1, function() PrintMessage(HUD_PRINTCENTER, "Vote passed! Player kicking...") end)
 		local kickplayername = net.ReadString()
@@ -41,10 +45,14 @@ function vote_result()
 		for i, n in pairs(players) do
 			local name = string.sub(tostring(players[i]), 12, string.find(tostring(players[i]), "]", 11, true) - 1)
 			if name == kickplayername then
-				n:Kick()
+				--n:Kick()
 			end
 		end
 	else
+		util.AddNetworkString("votefinished_no_imgshow")
+		net.Start("votefinished_no_imgshow")
+		net.Broadcast()
+
 		PrintMessage(HUD_PRINTCENTER, "Vote not passed!")
 		timer.Simple(1, function() PrintMessage(HUD_PRINTCENTER, "Vote not passed!") end)
 	end

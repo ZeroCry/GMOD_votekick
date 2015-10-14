@@ -26,7 +26,6 @@ function init()
 	outline   = false,
 	})
 
-	User_Vote = nil
 	VoteLock = false
 	VoteReady = false
 
@@ -97,7 +96,6 @@ end
 
 function voting()
 	if VoteReady == true and input.IsKeyDown(KEYS["VOTE_YES"]) and VoteLock == false then
-		User_Vote = "YES"
 		VoteLock = true
 
 		votedimg = vgui.Create("DImage")
@@ -109,7 +107,6 @@ function voting()
 			net.WriteInt(1, 4)
 		net.SendToServer()
 	elseif VoteReady == true and input.IsKeyDown(KEYS["VOTE_NO"]) and VoteLock == false then
-		User_Vote = "NO"
 		VoteLock = true
 
 		votedimg = vgui.Create("DImage")
@@ -262,8 +259,43 @@ function DSetPosSizeParent(anyDerma, Px, Py, Sx, Sy, ParentDerma)
 	end
 end
 
+function display_blank_or_yesno()
+	if display_time == -1 then
+		timer.Remove("imgshowtimer")
+		dfvk:Close()
+	elseif display_time > 0 and display_time % 2 == 0 or display_time == 0 then
+		finished_img:SetImage("votekick/blank.png", "vgui/avatar_default")
+		display_time = display_time - 1
+	else
+		if display_img == "yes" then
+			finished_img:SetImage("votekick/vote_finished_yes.png", "vgui/avatar_default")
+		else
+			finished_img:SetImage("votekick/vote_finished_no.png", "vgui/avatar_default")
+		end
+		display_time = display_time - 1
+	end
+end
+
 net.Receive("name_sendtoclient", kickplayer_selector)
 net.Receive("VoteCountedReturn", vkdisplay_update)
+net.Receive("votefinished_yes_imgshow",
+function()
+	finished_img = vgui.Create("DImage")
+	DSetPosSizeParent(finished_img, 3, 0, 303, 169, dpvk)
+	finished_img:SetImage("votekick/vote_finished_yes.png", "vgui/avatar_default")
+	display_time = 4
+	display_img = "yes"
+	timer.Create("imgshowtimer", 1, 0, display_blank_or_yesno)
+end)
+net.Receive("votefinished_no_imgshow",
+function()
+	finished_img = vgui.Create("DImage")
+	DSetPosSizeParent(finished_img, 9, 0, 303, 169, dpvk)
+	finished_img:SetImage("votekick/vote_finished_no.png", "vgui/avatar_default")
+	display_time = 4
+	display_img = "no"
+	timer.Create("imgshowtimer", 1, 0, display_blank_or_yesno)
+end)
 hook.Add("Think", "Accept Keys", voting)
 -- Debug
 hook.Add("OnPlayerChat", "Debugging", votekick)
