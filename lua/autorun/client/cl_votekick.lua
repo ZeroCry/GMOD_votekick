@@ -1,4 +1,4 @@
-DERMATEXT  = {SELECTOR_DIALOGTITLE = "Do you want kick player?",
+DERMATEXT  = {SR_DIALOGTITLE = "Do you want kick player?", SR_BUTTON = "Votekick start!",
 			VK_DIALOGTITLE = "VoteKick", VK_DIALOGCONTENT = "KickPlayer: ",
 			VK_LABEL_PRESSKEY_YES = "Press F1 to Vote YES", VK_LABEL_PRESSKEY_NO = "Press F2 to Vote NO"}
 ERRORS = {NOTSELECT = "Please select you want kick player."}
@@ -7,7 +7,6 @@ COLOR  = {WHITE = Color(255, 255, 255, 255)}
 
 print("clientside lua is loaded.")
 print("ScrW:" .. ScrW() .. "\nScrH:" .. ScrH())
-
 
 function init()
 	surface.CreateFont("KickPlayerFont", {
@@ -35,20 +34,24 @@ function init()
 end
 init()
 
-function kickplayer_selector(ply, text)
+function kickplayer_selector()
 	voteby = net.ReadString()
-	playersname = net.ReadTable()
+	players = net.ReadTable()
 
 	DialogCreate("selector")
 end
 
 function votekick_IsStart()
 	if dlvselect != nil then
-		print(dlvselect)
 		df:Close()
 		votekick(dlvselect, voteby)
 	else
-		Entity(1):PrintMessage(HUD_PRINTTALK, ERRORS["NOTSELECT"])
+		for i, n in pairs(players) do
+			local name = string.sub(tostring(players[i]), 12, string.find(tostring(players[i]), "]", 11, true) - 1)
+			if name == voteby then
+				n:PrintMessage(HUD_PRINTTALK, ERRORS["NOTSELECT"])
+			end
+		end
 	end
 end
 
@@ -56,7 +59,8 @@ function votekick(kickplayer)
 	-- Variables
 	kickplayer_str = tostring(kickplayer)
 	vk_dialogcontent = DERMATEXT["VK_DIALOGCONTENT"] .. kickplayer_str .. " ?"
-	votetime = 60
+	-- Debug Default is 60s
+	votetime = 5
 	local textsizeMAX = 311
 	local textsizeMIN = 311
 	-- text width size check. 1 character = 13
@@ -98,7 +102,7 @@ function voting()
 
 		votedimg = vgui.Create("DImage")
 		DSetPosSizeParent(votedimg, 0, 0, dllvkmtextwidth + 10, 169, dpvk)
-		votedimg:SetImage("votekick/select_yes.png", "vgui/avatar_default")
+		votedimg:SetImage("votekick/vote_yes.png", "vgui/avatar_default")
 
 		net.Start("VOTED")
 			net.WriteString("YES")
@@ -110,7 +114,7 @@ function voting()
 
 		votedimg = vgui.Create("DImage")
 		DSetPosSizeParent(votedimg, 0, 0, dllvkmtextwidth + 10, 169, dpvk)
-		votedimg:SetImage("votekick/select_no.png", "vgui/avatar_default")
+		votedimg:SetImage("votekick/vote_no.png", "vgui/avatar_default")
 
 		net.Start("VOTED")
 			net.WriteString("NO")
@@ -121,7 +125,11 @@ end
 
 function vote_countdown()
 	if votetime <= 0 then
+		timer.Remove("vk_timer")
 		VoteReady = false
+		net.Start("VOTE_END")
+			net.WriteString(tostring(dlvselect))
+		net.SendToServer()
 	else
 		votetime = votetime - 1
 		local str = tostring(votetime)
@@ -140,22 +148,19 @@ function vkdisplay_update()
 	dllvkNcount:SetText(dllvkNcount_Text)
 end
 
-
-
-
-
-
-
-
--- Util
+--**************************************
+--**************** Util ****************
+--**************************************
 -- DermaCreate
 function DialogCreate(selector_or_voting)
 	if selector_or_voting == "selector" then
+		-- Debug
+		print("Derma Selector show")
 		-- Frame
 		df = vgui.Create("DFrame")
 		DSetPosSizeParent(df, ScrW() / 2, ScrH() / 2, 350, 250)
 		df:Center()
-		df:SetTitle(DERMATEXT["SELECTOR_DIALOGTITLE"])
+		df:SetTitle(DERMATEXT["SR_DIALOGTITLE"])
 		df:SetDraggable(true)
 		df:MakePopup()
 		-- Panel
@@ -166,10 +171,11 @@ function DialogCreate(selector_or_voting)
 		DSetPosSizeParent(dlv, 5, 5, 330, 170, dp)
 		dlv:SetMultiSelect(false)
 		dlv:AddColumn("Player")
-		for i, n in pairs(playersname) do
-			local playername = string.sub(tostring(playersname[i]), 12, string.find(tostring(playersname[i]), "]", 11, true) - 1)
-			--if playername != voteby then
-			dlv:AddLine(playername)
+		for i, n in pairs(players) do
+			local name = string.sub(tostring(players[i]), 12, string.find(tostring(players[i]), "]", 11, true) - 1)
+			-- Debug
+			--if name != voteby then
+			dlv:AddLine(name)
 			--end
 		end
 		dlvselect = nil
@@ -179,10 +185,12 @@ function DialogCreate(selector_or_voting)
 		-- Button
 		db = vgui.Create("DButton")
 		DSetPosSizeParent(db, 5, 179, 330, 35, dp)
-		db:SetText("votekick")
+		db:SetText(DERMATEXT["SR_BUTTON"])
 		db:SetFont("DermaLarge")
 		db.DoClick = votekick_IsStart
 	elseif selector_or_voting == "voting" then
+		-- Debug
+		print("Derma Voting show")
 		-- Frame
 		dfvk = vgui.Create("DFrame")
 		DSetPosSizeParent(dfvk, ScrW() - ScrW(), (ScrH() - ScrH()) + 300, dllvkmtextwidth + 20, 200)
@@ -253,7 +261,6 @@ function DSetPosSizeParent(anyDerma, Px, Py, Sx, Sy, ParentDerma)
 		anyDerma:SetParent(ParentDerma)
 	end
 end
-
 
 net.Receive("name_sendtoclient", kickplayer_selector)
 net.Receive("VoteCountedReturn", vkdisplay_update)
